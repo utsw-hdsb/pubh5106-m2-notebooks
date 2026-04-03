@@ -3,3 +3,4 @@ gensim
 matplotlib
 scikit-learn
 numpy
+litellm
