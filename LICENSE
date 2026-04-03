@@ -1,0 +1,20 @@
+Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International
+
+This repository contains materials under two licenses:
+
+1. M2_explore_tokenization.ipynb and M2_explore_embeddings.ipynb
+   are licensed under CC BY-NC-SA 4.0.
+   https://creativecommons.org/licenses/by-nc-sa/4.0/
+
+   You are free to share and adapt these materials for non-commercial
+   purposes, provided you give appropriate credit and distribute
+   adaptations under the same license.
+
+2. UDL_12_3_Tokenization.ipynb is from "Understanding Deep Learning"
+   by Simon J.D. Prince (MIT Press, 2024) and is licensed under
+   CC BY-NC-ND 4.0.
+   https://creativecommons.org/licenses/by-nc-nd/4.0/
+
+   This file is included without modification. It may not be adapted
+   or used commercially. All credit belongs to the original author.
+   Original repository: https://github.com/udlbook/udlbook
