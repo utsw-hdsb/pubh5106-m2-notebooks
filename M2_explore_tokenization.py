@@ -235,10 +235,13 @@ for term in search_terms:
         print(f"  {term:<20} NO  → split into {pieces}")
 
 # %% [markdown]
-# **The takeaway:** Common English words and some frequent medical terms
-# exist as whole tokens. Rarer clinical terms are broken into subword
-# pieces. This means the model has to *reconstruct* meaning from fragments
-# rather than processing the term as a single unit.
+# **The takeaway:** Common English words ("the", "patient", "blood") exist
+# as whole tokens, but almost no medical terminology does — not even
+# frequent terms like "hypertension" or "diabetes." The tokenizer was
+# trained on general web text where these medical terms are rare enough
+# to be split into subword fragments. This means the model must
+# *reconstruct* clinical meaning from pieces that individually carry no
+# medical significance.
 
 # %% [markdown]
 # ---
