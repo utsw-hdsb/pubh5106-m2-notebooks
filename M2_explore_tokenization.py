@@ -120,7 +120,9 @@ for drug in drugs:
 # %% [markdown]
 # **Notice the pattern:**
 #
-# - Common, short words ("aspirin") tend to be single tokens.
+# - Common English words ("the", "patient", "has") tend to be single tokens.
+# - Even familiar drug names like "aspirin" may be split ("as", "pir", "in")
+#   because the tokenizer was trained on general text, not medical vocabulary.
 # - Longer or rarer names get split into subword pieces that may have
 #   no medical meaning on their own.
 #
