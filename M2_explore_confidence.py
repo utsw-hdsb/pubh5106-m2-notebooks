@@ -36,7 +36,7 @@
 #
 # ## What You Will Do
 #
-# 1. Connect to an LLM running on Ollama
+# 1. Connect to an LLM via the Groq API
 # 2. Ask it clinical questions with known answers
 # 3. Request confidence scores and see how they relate to correctness
 # 4. Test it with a fictional drug to observe hallucination
@@ -45,20 +45,31 @@
 # **Time:** ~15 minutes
 #
 # **Platform:** BinderHub
+#
+# **Requires:** A free Groq API key (the same one you use for labs).
 
 # %% [markdown]
 # ---
 # ## Setup
 #
-# We use [Ollama](https://ollama.com), a local LLM server available on the
-# course BinderHub. No API key or account is needed — the model runs on
-# infrastructure provided by the course.
+# We use [Groq](https://groq.com), a free cloud service that hosts
+# open-source LLMs. You need a Groq API key:
+#
+# 1. Go to [console.groq.com](https://console.groq.com)
+# 2. Create a free account (if you haven't already)
+# 3. Go to **API Keys** and create one
+# 4. Paste it below when prompted
 
 # %%
+import os
+import getpass
 from litellm import completion
 
-# Model to use — Llama 3.2 3B on the course Ollama server
-MODEL = "ollama/llama3.2:3b"
+if "GROQ_API_KEY" not in os.environ:
+    os.environ["GROQ_API_KEY"] = getpass.getpass("Enter your Groq API key: ")
+
+# Model to use — Llama 3.1 8B on Groq
+MODEL = "groq/llama-3.1-8b-instant"
 
 # %%
 # Quick connection test
