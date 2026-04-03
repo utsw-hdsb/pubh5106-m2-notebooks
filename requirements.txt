@@ -1,0 +1,5 @@
+tiktoken
+gensim
+matplotlib
+scikit-learn
+numpy
