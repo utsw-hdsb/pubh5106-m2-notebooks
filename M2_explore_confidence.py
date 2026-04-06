@@ -128,47 +128,67 @@ def parse_confidence(response_text):
 # it claimed.
 
 # %%
-# Questions with known answers
+# Questions designed to test LLM calibration at different difficulty levels.
+# Mix of easy (baseline), tricky (common misconceptions), and hard
+# (nuanced reasoning, recent guidelines, edge cases).
+
 questions = [
+    # --- Easy (baseline: model should get right with high confidence) ---
     {
         "question": "What class of drug is metformin?",
         "correct": "biguanide",
         "keywords": ["biguanide"],
-    },
-    {
-        "question": "What is the first-line treatment for hypertension in most patients?",
-        "correct": "thiazide diuretic, ACE inhibitor, ARB, or calcium channel blocker",
-        "keywords": ["thiazide", "ace", "arb", "calcium channel", "diuretic"],
-    },
-    {
-        "question": "What enzyme do statins inhibit?",
-        "correct": "HMG-CoA reductase",
-        "keywords": ["hmg-coa", "hmg coa", "reductase"],
-    },
-    {
-        "question": "What is the normal range for fasting blood glucose in mg/dL?",
-        "correct": "70-100 mg/dL",
-        "keywords": ["70", "100"],
+        "difficulty": "easy",
     },
     {
         "question": "What vitamin deficiency causes scurvy?",
         "correct": "Vitamin C",
         "keywords": ["vitamin c", "ascorbic"],
+        "difficulty": "easy",
+    },
+    # --- Tricky (common misconceptions or subtle distinctions) ---
+    {
+        "question": "A patient with a documented severe penicillin allergy (anaphylaxis) needs antibiotics for a skin infection. Can they safely receive cephalexin?",
+        "correct": "No — cephalexin (a first-generation cephalosporin) has a higher cross-reactivity risk with penicillin than later-generation cephalosporins. It should be avoided in patients with a history of anaphylaxis to penicillin.",
+        "keywords": ["avoid", "cross-react", "anaphylaxis", "not recommended", "risk"],
+        "difficulty": "tricky",
     },
     {
-        "question": "What is the inheritance pattern of sickle cell disease?",
-        "correct": "Autosomal recessive",
-        "keywords": ["autosomal recessive"],
+        "question": "A 72-year-old patient with stage 4 CKD (eGFR 22) has poorly controlled type 2 diabetes. Is metformin appropriate?",
+        "correct": "Metformin is generally contraindicated when eGFR is below 30 mL/min. At eGFR 22, it should be discontinued due to risk of lactic acidosis.",
+        "keywords": ["contraindicated", "discontinue", "lactic acidosis", "below 30", "not recommended"],
+        "difficulty": "tricky",
     },
     {
-        "question": "What is the mechanism of action of PCSK9 inhibitors?",
-        "correct": "Prevent degradation of LDL receptors",
-        "keywords": ["ldl receptor", "degradation", "prevent"],
+        "question": "Which antidepressant class is most associated with QT prolongation and should be used cautiously in patients with cardiac risk factors?",
+        "correct": "Tricyclic antidepressants (TCAs) and some SSRIs (particularly citalopram at high doses)",
+        "keywords": ["tricyclic", "tca", "citalopram"],
+        "difficulty": "tricky",
+    },
+    # --- Hard (nuanced, contested, or requires recent knowledge) ---
+    {
+        "question": "For a patient with heart failure with preserved ejection fraction (HFpEF), what is the current evidence-based pharmacotherapy? Name specific drug classes with trial evidence.",
+        "correct": "SGLT2 inhibitors (empagliflozin — EMPEROR-Preserved trial; dapagliflozin — DELIVER trial). Evidence for other HF drugs (ACEi, ARBs, beta-blockers) in HFpEF is weaker than in HFrEF.",
+        "keywords": ["sglt2", "empagliflozin", "dapagliflozin", "emperor", "deliver"],
+        "difficulty": "hard",
     },
     {
-        "question": "What cranial nerve controls the movement of the tongue?",
-        "correct": "Cranial nerve XII (hypoglossal)",
-        "keywords": ["xii", "12", "hypoglossal"],
+        "question": "What is the recommended target LDL-C level for a patient who has already had a myocardial infarction and is on maximally tolerated statin therapy but has an LDL-C of 85 mg/dL?",
+        "correct": "Current ACC/AHA guidelines recommend LDL-C < 70 mg/dL for very high-risk ASCVD patients. At 85 mg/dL post-MI on max statin, adding ezetimibe or a PCSK9 inhibitor should be considered.",
+        "keywords": ["70", "ezetimibe", "pcsk9", "add"],
+        "difficulty": "hard",
+    },
+    {
+        "question": "In a patient with both atrial fibrillation and end-stage renal disease on hemodialysis, what anticoagulant should be used for stroke prevention? Cite the evidence.",
+        "correct": "This is genuinely uncertain. DOACs are not well-studied in ESRD/dialysis. Warfarin has been traditionally used but evidence is conflicting — some studies show harm. The 2023 KDIGO guidelines acknowledge the uncertainty. There is no strong evidence-based answer.",
+        "keywords": ["uncertain", "no clear", "conflicting", "warfarin", "limited evidence", "controversial"],
+        "difficulty": "hard",
+    },
+    {
+        "question": "A 45-year-old Black man with hypertension and stage 3a CKD with albuminuria. Per current guidelines, what is the preferred first-line antihypertensive and why?",
+        "correct": "ACE inhibitor or ARB — specifically because of the albuminuria/proteinuria, which indicates kidney damage. The renoprotective effect of RAAS blockade takes priority over the general recommendation of CCBs/thiazides as first-line in Black patients without CKD.",
+        "keywords": ["ace", "arb", "renoprotective", "albumin", "proteinuria", "kidney"],
+        "difficulty": "hard",
     },
 ]
 
@@ -187,29 +207,53 @@ for q in questions:
         "response": response,
         "confidence": confidence,
         "correct": is_correct,
+        "difficulty": q["difficulty"],
     })
     symbol = "✓" if is_correct else "✗"
     conf_str = f"{confidence:.0f}%" if confidence else "N/A"
-    print(f"  {symbol} [{conf_str:>4}] {q['question'][:60]}")
+    diff = q["difficulty"].upper()
+    print(f"  {symbol} [{conf_str:>4}] [{diff:<6}] {q['question'][:55]}")
 
 # %%
-# Summary statistics
+# Summary statistics by difficulty
+print("=== Overall ===")
 confidences = [r["confidence"] for r in results if r["confidence"] is not None]
 if confidences:
-    print(f"\nConfidence scores: {[f'{c:.0f}%' for c in confidences]}")
-    print(f"Mean confidence:   {sum(confidences)/len(confidences):.1f}%")
-    print(f"Min confidence:    {min(confidences):.0f}%")
-    print(f"Max confidence:    {max(confidences):.0f}%")
     correct_count = sum(1 for r in results if r["correct"])
-    print(f"Correct answers:   {correct_count}/{len(results)}")
+    print(f"  Correct: {correct_count}/{len(results)}")
+    print(f"  Mean confidence: {sum(confidences)/len(confidences):.1f}%")
+
+print("\n=== By Difficulty ===\n")
+for level in ["easy", "tricky", "hard"]:
+    level_results = [r for r in results if r["difficulty"] == level]
+    level_confs = [r["confidence"] for r in level_results if r["confidence"] is not None]
+    level_correct = sum(1 for r in level_results if r["correct"])
+    if level_confs:
+        mean_conf = sum(level_confs) / len(level_confs)
+        print(f"  {level.upper():<6}  correct={level_correct}/{len(level_results)}  "
+              f"mean confidence={mean_conf:.0f}%  "
+              f"range={min(level_confs):.0f}–{max(level_confs):.0f}%")
+    else:
+        print(f"  {level.upper():<6}  correct={level_correct}/{len(level_results)}  "
+              f"no confidence scores parsed")
+
+print()
+print("KEY QUESTION: Does the model's stated confidence track the actual")
+print("difficulty? A well-calibrated system should be less confident on")
+print("harder questions. Does yours?")
 
 # %% [markdown]
-# **Look at the confidence scores.**
+# **Look at the confidence scores by difficulty.**
 #
-# - Are the scores clustered in a narrow range (e.g., 90–99%)?
-# - Does the model ever say "I'm only 50% sure"?
-# - For questions it got right, are the scores meaningfully different
-#   from questions it struggled with?
+# - On the **easy** questions (textbook facts), the model should be
+#   correct and confident. This is the baseline.
+# - On the **tricky** questions (contraindications, drug interactions),
+#   does the model's confidence drop when it gets things wrong?
+# - On the **hard** questions (nuanced guidelines, genuine uncertainty),
+#   does the model admit uncertainty — or does it state 90%+ confidence
+#   even when the medical community itself disagrees?
+# - A well-calibrated system would show: high confidence on easy, moderate
+#   on tricky, low on hard. **Does yours?**
 
 # %% [markdown]
 # ---
@@ -290,7 +334,7 @@ if real_confs and fake_confs:
 # Does changing temperature affect the model's stated confidence?
 
 # %%
-test_question = "What class of drug is metformin?"
+test_question = "In a patient with both atrial fibrillation and end-stage renal disease on hemodialysis, what anticoagulant should be used for stroke prevention?"
 temperatures = [0.0, 0.3, 0.7, 1.0, 1.5]
 
 print(f"Question: {test_question}\n")
@@ -324,7 +368,7 @@ for temp in temperatures:
 # and the same confidence every time. Let's check.
 
 # %%
-repeat_question = "What enzyme do statins inhibit?"
+repeat_question = "For a patient with HFpEF, what is the current evidence-based pharmacotherapy?"
 n_repeats = 5
 
 print(f"Asking '{repeat_question}' {n_repeats} times at temp=0.0:\n")
